@@ -215,9 +215,3 @@ GET /user/1/accounts
 | PUT | `/credential-password-ip/{credential_id}/ip/{item_id}` | Update a whitelist entry |
 
 ---
-
-## Further Reading
-
-- [bunq API documentation](https://doc.bunq.com)
-- [Creating the API context](https://doc.bunq.com/tutorials/your-first-payment/creating-the-api-context)
-- [bunq sandbox tools (Android emulator)](https://doc.bunq.com/getting-started/tools/android-emulator)
