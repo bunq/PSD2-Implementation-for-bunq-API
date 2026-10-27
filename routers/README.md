@@ -39,8 +39,17 @@ Everything related to payments and payment requests.
 | POST   | /user/{user_id}/draft-payment                                                       | Create a draft payment                                   |
 | PUT    | /user/{user_id}/monetary-account/{monetary_account_id}/draft-payment/{payment_id}/ | Accept a draft payment (requires signing)                |
 | POST   | /user/{user_id}/draft-payment-batch                                                 | Create multiple draft payments in a single call          |
+| GET    | /user/{user_id}/monetary-account/{monetary_account_id}/schedule-payment            | List scheduled payments (standing orders) for an account |
+| GET    | /user/{user_id}/monetary-account/{monetary_account_id}/schedule-payment/{schedule_payment_id} | Get a single scheduled payment                 |
+| POST   | /user/{user_id}/monetary-account/{monetary_account_id}/schedule-payment            | Create a scheduled payment (requires signing)             |
+| PUT    | /user/{user_id}/monetary-account/{monetary_account_id}/schedule-payment/{schedule_payment_id} | Update a scheduled payment (requires signing)   |
+| DELETE | /user/{user_id}/monetary-account/{monetary_account_id}/schedule-payment/{schedule_payment_id} | Cancel a scheduled payment                      |
+| GET    | /user/{user_id}/monetary-account/{monetary_account_id}/schedule/{schedule_id}/schedule-instance | List the individual runs of a scheduled payment |
 
-> Note: `POST /payment` and `PUT /draft-payment` include an `X-Bunq-Client-Signature` header generated from the private key.
+> Note: `POST /payment`, `PUT /draft-payment`, `POST /schedule-payment` and `PUT /schedule-payment/{id}` include an `X-Bunq-Client-Signature` header generated from the private key.
+> All requests in this file now send the full bunq header set (`X-Bunq-Client-Request-Id`, `X-Bunq-Language`, `X-Bunq-Region`, `X-Bunq-Geolocation`, `Cache-Control`) via `build_headers()`, so a request's ID can be correlated with bunq's own logs when debugging.
+>
+> **PSD2 caveat:** `POST`/`PUT`/`DELETE .../schedule-payment` require full "make payments" account rights, which a PSD2 end-user OAuth session never has — not even with a PISP certificate (PISP only grants draft-payment rights). Calling these as a PSD2 TPP returns `404 "The item you requested could not be found"`, which is bunq's generic response for a failed authorization check, not a sign that the account/counterparty/request body is wrong. `GET .../schedule-payment` (list and single) works fine for PSD2 TPPs since it only needs view-transactions access. To let an end-user set up a recurring payment through a PSD2 PISP flow, use `POST /draft-payment` with a `schedule` block instead (see below) — the user approves once in the app, and that approval is what creates the real `ScheduledPayment` these endpoints would otherwise create directly.
 
 ---
 
